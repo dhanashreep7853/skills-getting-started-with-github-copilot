@@ -20,11 +20,28 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const spotsLeft = details.max_participants - details.participants.length;
 
+        // Build participants HTML (handles strings or objects with name/email)
+        const participantsHtml =
+          details.participants && details.participants.length
+            ? `<ul class="participants-list">${details.participants
+                .map(
+                  (p) =>
+                    `<li><span class="participant-dot" aria-hidden="true"></span>${
+                      typeof p === "string" ? escapeHtml(p) : escapeHtml(p.name || p.email || "Participant")
+                    }</li>`
+                )
+                .join("")}</ul>`
+            : `<p class="info">No participants yet</p>`;
+
         activityCard.innerHTML = `
-          <h4>${name}</h4>
-          <p>${details.description}</p>
-          <p><strong>Schedule:</strong> ${details.schedule}</p>
+          <h4>${escapeHtml(name)}</h4>
+          <p>${escapeHtml(details.description)}</p>
+          <p><strong>Schedule:</strong> ${escapeHtml(details.schedule)}</p>
           <p><strong>Availability:</strong> ${spotsLeft} spots left</p>
+          <div class="participants-section">
+            <h5>Participants</h5>
+            ${participantsHtml}
+          </div>
         `;
 
         activitiesList.appendChild(activityCard);
@@ -84,3 +101,14 @@ document.addEventListener("DOMContentLoaded", () => {
   // Initialize app
   fetchActivities();
 });
+
+// Helper to avoid injecting raw HTML from data
+function escapeHtml(str) {
+  if (typeof str !== "string") return "";
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
